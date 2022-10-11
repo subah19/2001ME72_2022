@@ -1,15 +1,9 @@
 import pandas as pd
+import openpyxl as opxl
 
-from platform import python_version
-ver = python_version()
-
-if ver == "3.8.10":
-    print("Correct Version Installed")
-else:
-    print("Please install 3.8.10. Instruction are present in the GitHub Repo/Webmail. Url: https://pastebin.com/nvibxmjw")
 mod=5000
 
-df = pd.read_csv("octant_input.csv")
+df = pd.read_excel("C:/Users/hp/Documents/GitHub/2001ME72_2022/tut02/input_octant_transition_identify.xlsx")
 
 #-----------------------------------------------------
 
@@ -133,4 +127,4 @@ for m in range(len(chunked_list)):
         df.iloc[m+2, j+13] = chunked_list[m].count(int(top_row[2+j]))
 
 # finally writing output to file
-df.to_csv('octant_output.csv', index=False)
+df.to_excel('octant_output_2.xlsx', index=False)
