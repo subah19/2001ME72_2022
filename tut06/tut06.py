@@ -115,3 +115,27 @@ def attendance_report():
 
    book.save( "Attendance_report_consolidated" + ".xlsx")  # Saving full attendance report
   
+
+
+
+attendance_report()
+# importing required libraries for sending mail
+
+    
+
+
+            
+def send_mail(): #defining function to send mail
+    import smtplib
+    import email.encoders
+    import base64
+
+    from email.encoders import encode_base64
+    from getpass import getpass
+    from smtplib import SMTP
+    
+    from email import encoders
+    from email.mime.base import MIMEBase
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from mimetypes import guess_type
