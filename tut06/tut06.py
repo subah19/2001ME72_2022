@@ -139,3 +139,39 @@ def send_mail(): #defining function to send mail
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     from mimetypes import guess_type
+    fromaddr = input("Enter Mail Id: ") 
+    toaddr = "cs3842022@gmail.com"  
+    Password_ = input("Enter Password: ")  
+
+   
+    msg = MIMEMultipart()    
+    msg['From'] = fromaddr    
+    msg['To'] = toaddr    
+    msg['Subject'] = " Attendance report"   
+    body = "Dear Sir,\n\nPlease find attachment.\n\nThanks and Regards\nShubham\n2001ME72" 
+    msg.attach(MIMEText(body, 'plain')) 
+
+    filename = 'attendance_report_consolidated.xlsx'  
+    attachment = open("attendance_report_consolidated.xlsx", "rb") 
+
+    p = MIMEBase('application', 'octet-stream')  
+
+    p.set_payload((attachment).read())    
+
+    encoders.encode_base64(p)            
+
+    p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+
+    msg.attach(p)    
+
+    s = smtplib.SMTP('smtp.gmail.com', 587)     
+
+    s.starttls()     
+
+    s.login(fromaddr, Password_)  
+
+    text = msg.as_string()      
+
+    s.sendmail(fromaddr, toaddr, text)  
+    s.quit()
+
