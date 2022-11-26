@@ -139,3 +139,134 @@ for l in lst_pak:
 
 for val in pak_batsman.values():
     val[-1]=round((val[0]/val[1])*100 , 2)
+
+
+############# india innings ############## 
+ind_bowlers_score=0
+ind_byes=0
+
+out_ind_bat={}
+for l in lst_ind:
+    x=l.index(".")
+    over_ind=l[0:x+2]
+
+    temp=l[x+2::].split(",")
+ #updating scoresheet after byes####################
+    c_ball=temp[0].split("to") #0 2
+    if f"{c_ball[0].strip()}" not in pak_bowlers.keys() :
+        pak_bowlers[f"{c_ball[0].strip()}"]=[1,0,0,0,0,0,0]   #[over0,medan1,runs2,Wickets3, NB4, WD5, ECO6]
+    elif "wide" in temp[1]:
+        pass
+    elif "byes" in temp[1]:        
+        if "FOUR" in temp[2]:
+            ind_byes+=4
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+        elif "1" in temp[2]:
+            ind_byes+=1
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+        elif "2" in temp[2]:
+            ind_byes+=2
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+        elif "3" in temp[2]:
+            ind_byes+=3
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+        elif "4" in temp[2]:
+            ind_byes+=4
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+        elif "5" in temp[2]:
+            ind_byes+=5
+            pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+    else:
+        pak_bowlers[f"{c_ball[0].strip()}"][0]+=1
+    
+    if f"{c_ball[1].strip()}" not in ind_bats.keys() and temp[1]!="wide":
+        ind_bats[f"{c_ball[1].strip()}"]=[0,1,0,0,0] #[runs,ball,4s,6s,sr]
+    elif "wide" in temp[1] :
+        pass
+    else:
+        ind_bats[f"{c_ball[1].strip()}"][1]+=1
+    
+    #updating scoresheet after out#############
+    if "out" in temp[1]:                    
+        pak_bowlers[f"{c_ball[0].strip()}"][3]+=1
+        
+        if "Bowled" in temp[1].split("!!")[0]:
+            out_ind_bat[f"{c_ball[1].strip()}"]=("b" + c_ball[0])
+        elif "Caught" in temp[1].split("!!")[0]:
+            w=(temp[1].split("!!")[0]).split("by")
+            out_ind_bat[f"{c_ball[1].strip()}"]=("c" + w[1] +" b " + c_ball[0])
+        elif "Lbw" in temp[1].split("!!")[0]:
+            out_ind_bat[f"{c_ball[1].strip()}"]=("lbw  b "+c_ball[0])
+
+    
+#updating scoresheet after runs by bat###############    
+    if "no run" in temp[1] or "out" in temp[1] :    
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=0
+        ind_bats[f"{c_ball[1].strip()}"][0]+=0
+    elif "1 run" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=1
+        ind_bats[f"{c_ball[1].strip()}"][0]+=1
+    elif "2 runs" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=2
+        ind_bats[f"{c_ball[1].strip()}"][0]+=2
+    elif "3 runs" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=3
+        ind_bats[f"{c_ball[1].strip()}"][0]+=3
+    elif "4 runs" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=4
+        ind_bats[f"{c_ball[1].strip()}"][0]+=4
+    elif "FOUR" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=4
+        ind_bats[f"{c_ball[1].strip()}"][0]+=4
+        ind_bats[f"{c_ball[1].strip()}"][2]+=1
+    elif "SIX" in temp[1]:
+        pak_bowlers[f"{c_ball[0].strip()}"][2]+=6
+        ind_bats[f"{c_ball[1].strip()}"][0]+=6
+        ind_bats[f"{c_ball[1].strip()}"][3]+=1
+    elif "wide" in temp[1]:
+        if "wides" in temp[1]:
+            pak_bowlers[f"{c_ball[0].strip()}"][2]+=int(temp[1][1])
+            pak_bowlers[f"{c_ball[0].strip()}"][5]+=int(temp[1][1])
+        else:
+            pak_bowlers[f"{c_ball[0].strip()}"][2]+=1
+            pak_bowlers[f"{c_ball[0].strip()}"][5]+=1
+
+
+for val in ind_bats.values():
+    val[-1]=round((val[0]/val[1])*100 , 2)
+
+for val in pak_batsman.values():
+    val[-1]=round((val[0]/val[1])*100 , 2)
+
+for val in ind_bowlers.values():
+    if val[0]%6==0:
+        val[0] = val[0]//6
+    else:
+        val[0] = (val[0]//6) + (val[0]%6)/10
+
+for val in pak_bowlers.values():
+    if val[0]%6==0:
+        val[0] = val[0]//6
+    else:
+        val[0] = (val[0]//6) + (val[0]%6)/10
+
+### Economy of ind bowlers
+for val in ind_bowlers.values(): 
+    x=str(val[0])
+    if "." in x:
+        balls = int(x[0])*6 + int(x[2])
+        val[-1]=round((val[2]/balls)*6,1)
+    else:
+        val[-1] = round((val[2]/val[0]) ,1) 
+
+### Economy of  pak bowlers
+for val in pak_bowlers.values(): 
+    x=str(val[0])
+    if "." in x:
+        balls = int(x[0])*6 + int(x[2])
+        val[-1]=round((val[2]/balls)*6,1)
+    else:
+        val[-1] = round((val[2]/val[0]) ,1)
+
+Fall_of_Wickets_paki="15-1(Babar Azam,2.4), 42-2(Fakhar Zaman,5.5), 87-3(Iftikhar Ahmed,12.1), 96-4(Rizwan,14.1), 97-5(Khushdil,14.3), 112-6(Asif Ali,16.3), 114-7(Mohammad Nawaz,17.1), 128-8(Shadab Khan,18.2), 128-9(Naseem Shah,18.3), 147-10(Dahani,19.5)"
+Fall_of_Wickets_india = "1-1(Rahul,0.2), 50-2(Rohit,8.0), 53-3(Kohli,9.1), 89-4(Suryakumar Yadav,14.2), 136-5(Jadeja,19.1)"
