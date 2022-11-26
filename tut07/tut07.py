@@ -27,17 +27,17 @@ def octant_range_names(mod, filename):
     
     
     try:
-    
+        # Calculating Average Values
         u_avg = df['U'].mean()
         v_avg = df['V'].mean()
         w_avg = df['W'].mean()
 
-        
+        # Calculating Average Value of U, V, W
         df.insert(4, column="U Avg", value="")
         df.insert(5, column="V Avg", value="")
         df.insert(6, column="W Avg", value="")
 
-    
+        # Calculating U', V', W' 
         df.insert(7, column="U'=U - U avg", value="")
         df.insert(8, column="V'=V - V avg", value="")
         df.insert(9, column="W'=W - W avg", value="")
@@ -59,7 +59,7 @@ def octant_range_names(mod, filename):
         exit()
         
     try:
-
+        #Inserting new column for Octant
         df.insert(10, column="Octant", value="")
         df.insert(11, column=" ", value="")
         df.insert(12, column="", value="")
@@ -116,4 +116,116 @@ def octant_range_names(mod, filename):
     except:
         print("Error in counting octant values.")
         exit()
+    
+    try:
+        
+        start = 0
+        end = len(l)
+        step = int(mod)
+        idx=1
+        rows_tot_mod = math.ceil(rows/step)
+        rows_tot = rows_tot_mod
+        for i in range(start, end, step):
+            x = i
+            sub_list = l[x:x+step]
+            y = x+step-1
+            if y>rows:
+                y=rows-1
+            df.at[idx ,'Octant ID'] = str(x)+"-"+str(y)
+            df.at[idx, '1'] = sub_list.count(1)
+            df.at[idx, '-1'] = sub_list.count(-1)
+            df.at[idx, '2'] = sub_list.count(2)
+            df.at[idx, '-2'] = sub_list.count(-2)
+            df.at[idx, '3'] = sub_list.count(3)
+            df.at[idx, '-3'] = sub_list.count(-3)
+            df.at[idx, '4'] = sub_list.count(4)
+            df.at[idx, '-4'] = sub_list.count(-4)
+            idx+=1
+    except:
+        print("Error in counting octant values for ranges!")
+        exit()
+    
+    try:
+        
+        col_num = 22
+        for i in range(1,5):
+            header = "Rank Octant "+str(i)
+            df.insert(col_num, column=header, value="")
+            col_num+=1
+            header = "Rank Octant "+str(-1*i)
+            df.insert(col_num, column=header, value="")
+            col_num+=1
+        df.insert(col_num, column="Rank 1 Octant ID", value="")
+        col_num+=1
+        df.insert(col_num, column="Rank 1 Octant Name", value="")
+        col_num+=1
+        
+        # Calculating rank for Overall Octant Count
+        dict={}
+        l=[]
+        for i in range(1,5):
+            oct_cnt = df.at[0, str(i)]
+            dict[oct_cnt] = str(i)
+            l.append(oct_cnt)
+            oct_cnt = df.at[0, str(-1*i)]
+            dict[oct_cnt] = str(-1*i)
+            l.append(oct_cnt)
+        
+        l.sort(reverse=True)
+        rank = 1
+        df.at[0, "Rank 1 Octant ID"] = dict[l[0]]
+        df.at[0, "Rank 1 Octant Name"] = octant_name_id_mapping[dict[l[0]]]
+        
+        for i in l:
+            oct_id = "Rank Octant "+dict[i]
+            df.at[0, oct_id] = rank
+            rank+=1
+        
+        # Calculating rank for Mod Octant Count
+        rank1=[]
+        for idx in range(1, rows_tot_mod+1): 
+            dict={}
+            l=[]
+            for i in range(1,5):
+                oct_cnt = df.at[idx, str(i)]
+                dict[oct_cnt] = str(i)
+                l.append(oct_cnt)
+                oct_cnt = df.at[idx, str(-1*i)]
+                dict[oct_cnt] = str(-1*i)
+                l.append(oct_cnt)
+
+            l.sort(reverse=True)
+            df.at[idx, "Rank 1 Octant ID"] = dict[l[0]]
+            rank1.append(dict[l[0]])
+            df.at[idx, "Rank 1 Octant Name"] = octant_name_id_mapping[dict[l[0]]]
+            
+            rank = 1
+            for i in l:
+                oct_id = "Rank Octant "+dict[i]
+                df.at[idx, oct_id] = rank
+                rank+=1
+        
+        # Count of Rank 1 Mod Values
+        idx = rows_tot_mod+5
+        df.at[idx, 'Rank Octant 4'] = "Octant ID"
+        df.at[idx, 'Rank Octant -4'] = "Octant Name"
+        df.at[idx, 'Rank 1 Octant ID'] = "Count of Rank 1 Mod Values"
+        idx+=1
+        for i in range(1,5):
+            oct_id = str(i)
+            cnt = rank1.count(oct_id)
+            df.at[idx, 'Rank Octant 4'] = oct_id
+            df.at[idx, 'Rank Octant -4'] = octant_name_id_mapping[oct_id]
+            df.at[idx, 'Rank 1 Octant ID'] = cnt
+            idx+=1
+            
+            oct_id = str(-1*i)
+            cnt = rank1.count(oct_id)
+            df.at[idx, 'Rank Octant 4'] = oct_id
+            df.at[idx, 'Rank Octant -4'] = octant_name_id_mapping[oct_id]
+            df.at[idx, 'Rank 1 Octant ID'] = cnt
+            idx+=1
+            
+    except Exception as e:
+        print("Error in calculating rank.", e)
     
