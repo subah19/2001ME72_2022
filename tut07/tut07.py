@@ -376,7 +376,7 @@ def octant_transition_count(mod, df):
 
 def octant_longest_subsequence_count_with_range(mod, df, filename):
     try:
-        
+        # Reading Excel File
         rows = df.shape[0]
         cols = df.shape[1]
         df.insert(cols, column="                   ", value="")
@@ -386,13 +386,13 @@ def octant_longest_subsequence_count_with_range(mod, df, filename):
         exit()
     
     try:
-    
+        # Dataframe to store longest sequence and Count
         data=[]
         df1 = pd.DataFrame(data, index=['1','-1','2','-2','3','-3','4','-4'],
                        columns=['Len', 'Count'])
         df1 = df1.fillna(0)
         
-        
+        # Dataframe to store time ranges
         df3 = pd.DataFrame(data, columns=['1','-1','2','-2','3','-3','4','-4'])
         
         prev = df.at[0, 'Octant'] 
@@ -424,7 +424,7 @@ def octant_longest_subsequence_count_with_range(mod, df, filename):
             df1.at[str(cur), 'Len'] = max(cur_len, df1.at[str(cur), 'Len'])
             prev = cur
 
-
+        # Inserting values in dataframe
         idx = 0
         for i in range(1,5):
             df.at[idx, 'Octant ##'] = str(i)
@@ -438,11 +438,11 @@ def octant_longest_subsequence_count_with_range(mod, df, filename):
             
         cols=df.shape[1]
         df.insert(cols, column="                         ", value="")
-        
+        # Inserting df3 in main dataframe
         idx=0
         for i in range(1,5):
             
-            
+            # For positive i
             df.at[idx, 'Octant ###'] = str(i)
             df.at[idx, 'Longest Subsequence Length '] = df1.at[str(i), 'Len']
             df.at[idx, 'Count '] = df1.at[str(i), 'Count']
@@ -458,7 +458,7 @@ def octant_longest_subsequence_count_with_range(mod, df, filename):
                 df.at[idx, 'Count '] = df3.at[index+1, str(i)]
                 idx+=1
             
-    
+            ### For negative i
             df.at[idx, 'Octant ###'] = str(-1*i)
             df.at[idx, 'Longest Subsequence Length '] = df1.at[str(-1*i), 'Len']
             df.at[idx, 'Count '] = df1.at[str(-1*i), 'Count']
@@ -485,3 +485,151 @@ def octant_longest_subsequence_count_with_range(mod, df, filename):
     except Exception as e:
         print("Error in exporting to Excel file!", e)
         exit()
+
+# Octant analysis function
+def octant_analysis(mod):
+    dir_list = os.listdir('input') 
+    for filename in dir_list:
+        if(filename[-4:]=='xlsx'): 
+            print(filename)
+         
+            df = octant_range_names(mod, filename)
+            df = octant_transition_count(mod, df)
+            df = octant_longest_subsequence_count_with_range(mod, df, filename)
+                    
+        path='input\\'+filename  
+        outPath='output\\'+str(filename[0:len(filename)-5])+'vel_octant_analysis_mod'+str(mod)+'.xlsx'        
+        worksheet = xl.load_workbook(path)
+        sheet = worksheet.active
+        fill_pattern = PatternFill(patternType="solid",fgColor="FFFF33")
+        sheet['L1'].value=""
+        sheet['AG1'].value=""
+        sheet['AH1'].value=""
+        sheet['AR1'].value=""
+        tot_r = df.shape[0]
+        tot_c = df.shape[1]
+        rows_tot = math.ceil(tot_r/mod)
+        r=0
+        for row in sheet.iter_rows(min_row=2, min_col=1, max_row=tot_r+1, max_col=tot_c):
+            c=0
+            for cell in row: 
+                cell.value = df.iat[r, c]
+                c+=1
+            r+=1
+        for row in sheet.iter_rows(min_row=1, min_col=14, max_row=rows_tot+2, max_col=32):
+            for cell in row: 
+                # print(cell.value, end=" ")
+                if(cell.value==1):
+                    cell.fill = fill_pattern
+
+        # Changing width of some columns
+        sheet.column_dimensions['M'].width = 15
+        sheet.column_dimensions['N'].width = 15
+        sheet.column_dimensions['W'].width = 15
+        sheet.column_dimensions['X'].width = 15
+        sheet.column_dimensions['Y'].width = 15
+        sheet.column_dimensions['Z'].width = 15
+        sheet.column_dimensions['AA'].width = 15
+        sheet.column_dimensions['AB'].width = 15
+        sheet.column_dimensions['AC'].width = 15
+        sheet.column_dimensions['AD'].width = 25
+        sheet.column_dimensions['AE'].width = 24
+        sheet.column_dimensions['AF'].width = 18
+        sheet.column_dimensions['AT'].width = 24
+
+        # Defining border formats 
+
+        thin_border = Border(left=Side(border_style='thin',color='00000000'),
+                        right=Side(border_style='thin',color='00000000'),
+                        top=Side(border_style='thin',color='00000000'),
+                        bottom=Side(border_style='thin',color='00000000')
+                        )
+        thick_border = Border(left=Side(border_style='thick',color='00000000'),
+                    right=Side(border_style='thick',color='00000000'),
+                    top=Side(border_style='thick',color='00000000'),
+                    bottom=Side(border_style='thick',color='00000000')
+                    )
+                        
+ 
+        col_num=19
+        
+        R_loc=1
+        col_loc=14
+
+        for i in range (R_loc,R_loc+rows_tot+2):
+            for j in range (col_loc,col_loc+col_num):
+                sheet.cell(row=i, column=j).border=thick_border
+
+        for i in range (rows_tot+7,rows_tot+16):
+            for j in range (29,32):
+                sheet.cell(row=i, column=j).border=thick_border
+
+        for row in sheet.iter_rows(min_row=4, min_col=36, max_row=11, max_col=43):
+            for cell in row:
+                cell.border = thick_border
+        
+        x=3
+        for n in range(rows_tot+1):
+            i=0
+            for row in sheet.iter_rows(min_row=x, min_col=35, max_row=x+8, max_col=43):
+                for cell in row:
+                    if(cell.value!=None):
+                        cell.border = thick_border
+            x+=13
+
+        for row in sheet.iter_rows(min_row=1, min_col=45, max_row=9, max_col=47):
+            for cell in row:
+                cell.border = thick_border
+
+        max_rows = 1
+        for ro in range(2, tot_r):
+            
+            if str(sheet.cell(row = ro, column = 50).value) == "nan":
+                max_rows = ro
+                break
+        
+        for row in sheet.iter_rows(min_row=1, min_col=49, max_row=max_rows-1, max_col=51):
+            for cell in row:
+                cell.border = thick_border
+        
+        sheet['E1']='U Avg'
+        sheet['F1']='V Avg'
+        sheet['G1']='W Avg'
+        sheet['H1']="U'=U - U avg"
+        sheet['I1']="V'=V - V avg"
+        sheet['J1']="W'=W - W avg"
+        sheet['K1']='Octant'
+        sheet['N1']='Overall Octant Count'
+        sheet['O1']='+1'
+        sheet['P1']='-1'
+        sheet['Q1']='+2'
+        sheet['R1']='-2'
+        sheet['S1']='+3'
+        sheet['T1']='-3'
+        sheet['U1']='+4'
+        sheet['V1']='-4'
+        sheet['W1']='Rank Octant 1'
+        sheet['X1']='Rank Octant -1'
+        sheet['Y1']='Rank Octant 2'
+        sheet['Z1']='Rank Octant -2'
+        sheet['AA1']='Rank Octant 3'
+        sheet['AB1']='Rank Octant -3'
+        sheet['AC1']='Rank Octant 4'
+        sheet['AD1']='Rank Octant -4'
+        sheet['AE1']='Rank1 Octant ID'
+        sheet['AF1']='Rank1 Octant Name'
+        sheet['AI1']='Overall Transition Count'
+        sheet['AS1']='Longest Subsquence Length'
+        sheet['AW1']='Longest Subsquence Length with Range'
+        sheet['AX1']='Longest Subsquence Length'
+        sheet['AY1']='Count'
+
+        
+        worksheet.save(outPath)
+
+mod=5000
+octant_analysis(mod)
+
+#This shall be the last lines of the code.
+end_time = datetime.now()
+print('Duration of Program Execution: {}'.format(end_time - start_time))
