@@ -283,20 +283,20 @@ def octant_transition_count(mod, df):
         idx+=1
         df.at[idx, blank_dict['f']] = "From"
 
-    
+        # Creating dataframe df1 to store values
         data=[]
         df1 = pd.DataFrame(data, index=['1','-1','2','-2','3','-3','4','-4'],
                         columns=['1','-1','2','-2','3','-3','4','-4'])
 
-        df1 = df1.fillna(0)  
+        df1 = df1.fillna(0)  # For filling 0 to df1
 
-        
+        # Calculating values
         for i in range(0,rows-1):
             first = str(df.at[i,'Octant'])
             second = str(df.at[i+1, 'Octant'])
             df1.at[first, second] += 1
 
-    
+        # Adding values to main dataframe
         for k in range (1,5):
             df.at[idx, blank_dict['s']] = str(k)
             for l in range (-4,5):
@@ -339,6 +339,7 @@ def octant_transition_count(mod, df):
                             columns=['1','-1','2','-2','3','-3','4','-4'])
             df1 = df1.fillna(0)
 
+            # Calculating values
             if lim==rows:
                 lim-=1
             for j in range(i,lim):
@@ -346,7 +347,7 @@ def octant_transition_count(mod, df):
                 second = str(df.at[j+1, 'Octant'])
                 df1.at[first, second] += 1
 
-    
+           # Adding values to the main dataframe
             for k in range (1,5):
                 df.at[idx, blank_dict['s']] = str(k)
                 for l in range (-4,5):
@@ -364,3 +365,123 @@ def octant_transition_count(mod, df):
         print("Error in calculating Mod Transition Count!")
         exit()
     
+    try:
+        # Exporting dataframe to excel
+        return df
+    except Exception as e:    
+        print("Error in exporting to excel.", e)
+        exit()
+
+# Longest Subsequence function
+
+def octant_longest_subsequence_count_with_range(mod, df, filename):
+    try:
+        
+        rows = df.shape[0]
+        cols = df.shape[1]
+        df.insert(cols, column="                   ", value="")
+        cols+=1
+    except Exception as e:
+        print("Error in reading Excel file!", e)
+        exit()
+    
+    try:
+    
+        data=[]
+        df1 = pd.DataFrame(data, index=['1','-1','2','-2','3','-3','4','-4'],
+                       columns=['Len', 'Count'])
+        df1 = df1.fillna(0)
+        
+        
+        df3 = pd.DataFrame(data, columns=['1','-1','2','-2','3','-3','4','-4'])
+        
+        prev = df.at[0, 'Octant'] 
+        df1.at[str(prev), 'Len'] = 1
+        cur_len = 1
+        ini = df.at[0,'T']
+        fin = df.at[0, 'T']
+
+        for idx in range(1,rows):
+            cur = df.at[idx, 'Octant']
+            if (cur == prev):
+                cur_len+=1
+            else:
+                cur_len = 1
+                ini = df.at[idx, 'T']
+            fin = df.at[idx, 'T']
+            df4 = df3.count(axis=0)
+            if (cur_len == df1.at[str(cur), 'Len']):
+                df1.at[str(cur), 'Count'] += 1                
+                df3.at[df4[str(cur)], str(cur)] = ini
+                df3.at[df4[str(cur)]+1, str(cur)] = fin
+            elif(cur_len > df1.at[str(cur), 'Len']):
+                df1.at[str(cur), 'Count'] = 1
+                del df3[str(cur)]
+                df3.insert(7, column = str(cur), value="")
+                df3.at[0, str(cur)] = ini
+                df3.at[1, str(cur)] = fin
+            df3.replace('', np.nan, inplace=True)
+            df1.at[str(cur), 'Len'] = max(cur_len, df1.at[str(cur), 'Len'])
+            prev = cur
+
+
+        idx = 0
+        for i in range(1,5):
+            df.at[idx, 'Octant ##'] = str(i)
+            df.at[idx, 'Longest Subsequence Length'] = df1.at[str(i), 'Len']
+            df.at[idx, 'Count'] = df1.at[str(i), 'Count']
+            idx+=1
+            df.at[idx, 'Octant ##'] = str(-1*i)
+            df.at[idx, 'Longest Subsequence Length'] = df1.at[str(-1*i), 'Len']
+            df.at[idx, 'Count'] = df1.at[str(-1*i), 'Count']
+            idx+=1
+            
+        cols=df.shape[1]
+        df.insert(cols, column="                         ", value="")
+        
+        idx=0
+        for i in range(1,5):
+            
+            
+            df.at[idx, 'Octant ###'] = str(i)
+            df.at[idx, 'Longest Subsequence Length '] = df1.at[str(i), 'Len']
+            df.at[idx, 'Count '] = df1.at[str(i), 'Count']
+            idx+=1
+            df.at[idx, 'Octant ###'] = "Time"
+            df.at[idx, 'Longest Subsequence Length '] = "From"
+            df.at[idx, 'Count '] = "To"
+            idx+=1
+            for index in range(0, len(df3[str(i)]), 2):
+                if np.isnan(df3.at[index, str(i)]):
+                    break
+                df.at[idx, 'Longest Subsequence Length '] = df3.at[index, str(i)]
+                df.at[idx, 'Count '] = df3.at[index+1, str(i)]
+                idx+=1
+            
+    
+            df.at[idx, 'Octant ###'] = str(-1*i)
+            df.at[idx, 'Longest Subsequence Length '] = df1.at[str(-1*i), 'Len']
+            df.at[idx, 'Count '] = df1.at[str(-1*i), 'Count']
+            idx+=1
+            df.at[idx, 'Octant ###'] = "Time"
+            df.at[idx, 'Longest Subsequence Length '] = "From"
+            df.at[idx, 'Count '] = "To"
+            idx+=1
+            
+            for index in range(0, len(df3[str(-1*i)]), 2):
+                if np.isnan(df3.at[index, str(-1*i)]):
+                    break
+                df.at[idx, 'Longest Subsequence Length '] = df3.at[index, str(-1*i)]
+                df.at[idx, 'Count '] = df3.at[index+1, str(-1*i)]
+                idx+=1     
+    except Exception as e:
+        print("Error in calculating longest sequence.", e)
+        exit()
+    
+    try:
+        # Exporting dataframe to excel 
+        df.to_excel(f'output\\{filename[0:len(filename)-5]}vel_octant_analysis_mod{mod}.xlsx', index=False)
+        return df
+    except Exception as e:
+        print("Error in exporting to Excel file!", e)
+        exit()
